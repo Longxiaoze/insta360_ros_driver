@@ -266,7 +266,7 @@ void EquirectangularNode::imageCallback(const sensor_msgs::msg::Image::SharedPtr
 {
     
     try {
-        cv_bridge::CvImagePtr cv_ptr = cv_bridge::toCvCopy(dual_fisheye_msg, "rgb8");
+        cv_bridge::CvImagePtr cv_ptr = cv_bridge::toCvCopy(dual_fisheye_msg, "bgr8");
         cv::Mat dual_fisheye_img = cv_ptr->image;
         
         int img_height = dual_fisheye_img.rows;
@@ -276,8 +276,8 @@ void EquirectangularNode::imageCallback(const sensor_msgs::msg::Image::SharedPtr
         cv::Mat front_img_full = dual_fisheye_img(cv::Rect(midpoint, 0, midpoint, img_height));
         cv::Mat back_img_full = dual_fisheye_img(cv::Rect(0, 0, midpoint, img_height));
         
-        cv::rotate(front_img_full, front_img_full, cv::ROTATE_90_COUNTERCLOCKWISE);
-        cv::rotate(back_img_full, back_img_full, cv::ROTATE_90_CLOCKWISE);
+        // cv::rotate(front_img_full, front_img_full, cv::ROTATE_90_COUNTERCLOCKWISE);
+        // cv::rotate(back_img_full, back_img_full, cv::ROTATE_90_CLOCKWISE);
         
         
         // Crop images based on crop_size parameter
@@ -318,8 +318,9 @@ void EquirectangularNode::imageCallback(const sensor_msgs::msg::Image::SharedPtr
         // Publish result
         cv_bridge::CvImage out_msg;
         out_msg.header = dual_fisheye_msg->header;
-        out_msg.encoding = "rgb8";
+        out_msg.encoding = "bgr8";
         out_msg.image = equirect_img;
+        RCLCPP_INFO(get_logger(), "Output image size: %dx%d", equirect_img.cols, equirect_img.rows);
         equirect_pub_->publish(*out_msg.toImageMsg());
         
         auto process_time = (now() - start_time).seconds();
